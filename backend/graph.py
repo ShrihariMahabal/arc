@@ -81,6 +81,7 @@ class State(TypedDict):
     nfrs: list[NFR]
 
 class WorkerState(TypedDict):
+    idx: int
     overview: list[str]
     title: FRTitle
     completed_frs: Annotated[list, operator.add]
@@ -104,7 +105,7 @@ def get_intro(state: State):
 def orchestrator(state: State):
     template = ChatPromptTemplate.from_messages([
         ("system", "You are an expert in software requirements gathering. Your task is to gather the functional requirements of an application based on the provided introduction."),
-        ("user", "Based on the provided application overview: {overview} and user input: {user_input}, please generate the titles of functional requirements. Each title should be a concise description of a functional requirement, e.g., 'User Authentication, Task Creation, Task Deletion.'"),
+        ("user", "Based on the provided application overview: {overview} and user input which contains both uploaded file contend and user prompt: {user_input}, please generate the titles of functional requirements. Each title should be a concise description of a functional requirement, e.g., 'User Authentication, Task Creation, Task Deletion.'"),
     ])
     prompt = template.invoke({
         "overview": state["overview"],
@@ -117,7 +118,7 @@ def worker(state: WorkerState):
     template = ChatPromptTemplate.from_messages([
         ("system", 
          "You are an expert in software requirements gathering. Your task is to generate a complete single functional requirement in JSON format based on the provided title, description, and application overview. "
-         "The JSON should contain keys like 'Title', 'Description', 'Fields', 'Constraints', and any other relevant keys based on the context. "
+         "The JSON should contain keys: 'ID', 'Title', 'Description', 'Constraints', and any other relevant keys based on the context. Make sure there are additional relevant keys as well. Note that the 'ID' should be a unique identifier for the functional requirement it should be a string in the format 'FR-{idx}. "
          "Ensure the output is a valid JSON object. No preamble/postamble or additional text should be included in the output."),
         ("user", 
          "Based on the following:\n\n"
@@ -130,7 +131,8 @@ def worker(state: WorkerState):
     prompt = template.invoke({
         "overview": state["overview"],
         "title": state["title"].title,
-        "description": state["title"].description
+        "description": state["title"].description,
+        "idx": state["idx"]
     })
 
     res = llm.invoke(prompt)
@@ -151,21 +153,35 @@ def worker(state: WorkerState):
     return {"completed_frs": [parsed]}
 
 def assign(state: State):
-    return [Send("worker", {"title": title, "overview": state["overview"]}) for title in state["frs_titles"]]
+    return [Send("worker", {"title": title, "overview": state["overview"], "idx": i}) for i, title in enumerate(state["frs_titles"])]
+
+def get_nfrs(state: State):
+    template = ChatPromptTemplate.from_messages([
+        ("system", "You are an expert in software requirements gathering. Your task is to gather the non-functional requirements of an application based on the provided introduction."),
+        ("user", "Based on the provided application overview: {overview} and user input which contains both uploaded file contend and user prompt: {user_input}, please generate a list of non-functional requirements. Each requirement should be a concise description, e.g., 'The application should be able to handle 1000 concurrent users without performance degradation.'"),
+    ])
+    prompt = template.invoke({
+        "overview": state["overview"],
+        "user_input": state["user_input"]
+    })
+    res = llm_for_nfrs.invoke(prompt)
+    return {"nfrs": res.nfrs}
 
 graph_builder = StateGraph(State)
 
 graph_builder.add_node("get_intro", get_intro)
+graph_builder.add_node("get_nfrs", get_nfrs)
 graph_builder.add_node("orchestrator", orchestrator)
 graph_builder.add_node("worker", worker)
 
 graph_builder.add_edge(START, "get_intro")
-graph_builder.add_edge("get_intro", "orchestrator")
+graph_builder.add_edge("get_intro", "get_nfrs")
+graph_builder.add_edge("get_nfrs", "orchestrator")
 graph_builder.add_conditional_edges("orchestrator", assign, ["worker"])
 graph_builder.add_edge("worker", END)
 
 graph = graph_builder.compile()
-result = graph.invoke({
-    "user_input": "Create a task management application that allows users to create, edit, and delete tasks. I dont have much information about the application, so add your own assumptions.",
-})
-print(result["completed_frs"])
+# result = graph.invoke({
+#     "user_input": "Create a task management application that allows users to create, edit, and delete tasks. I dont have much information about the application, so add your own assumptions.",
+# })
+# print(result["completed_frs"])
