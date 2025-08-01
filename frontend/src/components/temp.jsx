@@ -28,9 +28,10 @@ function temp() {
     
     const formData = new FormData();
     if (!prompt) {
-      setPrompt('Create a well defined SRS document based on the uploaded files')
+      formData.append('prompt', 'Create a well defined SRS document based on the uploaded files')
+    } else {
+      formData.append('prompt', prompt)
     }
-    formData.append('prompt', prompt)
     if (files.length > 0) {
       for (let i = 0; i < files.length; i++) {
         formData.append(`file-${i}`, files[i])
@@ -55,8 +56,8 @@ function temp() {
   }
 
   return (
-    <div className='min-h-screen w-full bg-gray-50 p-4 relative'>
-      <div className='absolute bottom-4 left-1/2 -translate-x-1/2 h-30 w-[90%] bg-gray-100 rounded-xl border-2 border-gray-300 focus-within:border-gray-700'>
+    <div className='h-screen w-full bg-white p-4 relative'>
+      <div className='absolute bottom-4 left-1/2 -translate-x-1/2 h-26 w-[90%] bg-gray-50 p-2 rounded-xl border-2 border-gray-300 focus-within:border-gray-700'>
         <textarea name="prompt" id="prompt" value={prompt} onChange={(e) => setPrompt(e.target.value)} placeholder='Enter your prompt here...' className='bg-transparent p-2 rounded-xl w-full h-[63%] absolute top-0 left-0 outline-0'></textarea>
         <div className='fixed left-0 bottom-0 h-[37%] w-full bg-transparent flex justify-between items-center'>
           <div className='flex'>
