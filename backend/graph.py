@@ -118,7 +118,7 @@ def worker(state: WorkerState):
     template = ChatPromptTemplate.from_messages([
         ("system", 
          "You are an expert in software requirements gathering. Your task is to generate a complete single functional requirement in JSON format based on the provided title, description, and application overview. "
-         "The JSON should contain keys: 'ID', 'Title', 'Description', 'Constraints', and any other relevant keys based on the context. Make sure there are additional relevant keys as well. Note that the 'ID' should be a unique identifier for the functional requirement it should be a string in the format 'FR-{idx}. "
+         "The JSON should contain keys: 'Title', 'Description', 'Constraints', and any other relevant keys based on the context. Make sure there are additional relevant keys as well."
          "Ensure the output is a valid JSON object. No preamble/postamble or additional text should be included in the output."),
         ("user", 
          "Based on the following:\n\n"
@@ -132,7 +132,6 @@ def worker(state: WorkerState):
         "overview": state["overview"],
         "title": state["title"].title,
         "description": state["title"].description,
-        "idx": state["idx"]
     })
 
     res = llm.invoke(prompt)
@@ -145,6 +144,7 @@ def worker(state: WorkerState):
 
     try:
         parsed = json.loads(raw_content)
+        parsed["ID"] = state["idx"]
     except json.JSONDecodeError as e:
         print("JSON decode error:", e)
         print("Raw content that failed:\n", raw_content)
