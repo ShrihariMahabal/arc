@@ -7,6 +7,9 @@ import Temp from './components/temp.jsx'
 import Temp1 from './components/temp1.jsx'
 import Login from './auth/Login.jsx'
 import Register from './auth/Register.jsx'
+import Projects from './components/projects.jsx'
+import AddProject from './components/addproject.jsx';
+import ProjectLayout from './components/projectlayout.jsx';
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
@@ -16,8 +19,11 @@ createRoot(document.getElementById('root')).render(
         <Route path='/register' element={<Register />} />
 
         <Route path='/' element={<Layout />}>
-          <Route index element={<Temp />} />
-          <Route path="temp1" element={<Temp1 />} />
+          <Route index element={<Temp1 />} />
+          <Route path='projects' element={<ProjectLayout />}>
+            <Route index element={<Projects />} />
+            <Route path='create-project' element={<AddProject />} />
+          </Route>
         </Route>
       </Routes>
     </BrowserRouter>
