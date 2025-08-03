@@ -8,7 +8,7 @@ import Temp1 from './components/temp1.jsx'
 import Login from './auth/Login.jsx'
 import Register from './auth/Register.jsx'
 import Projects from './components/projects.jsx'
-import AddProject from './components/addproject.jsx';
+import CreateDoc from './components/createdoc.jsx';
 import ProjectLayout from './components/projectlayout.jsx';
 
 createRoot(document.getElementById('root')).render(
@@ -22,7 +22,7 @@ createRoot(document.getElementById('root')).render(
           <Route index element={<Temp1 />} />
           <Route path='projects' element={<ProjectLayout />}>
             <Route index element={<Projects />} />
-            <Route path='create-project' element={<AddProject />} />
+            <Route path='create_doc/:id' element={<CreateDoc />} />
           </Route>
         </Route>
       </Routes>

@@ -9,7 +9,7 @@ function Modal({title, children, onSubmit, onClose}) {
         <button onClick={onClose} className='px-4 py-2 bg-transparent rounded-xl flex justify-center items-center cursor-pointer hover:bg-gray-200'>
           <p>Close</p>
         </button>
-        <button className='px-4 py-2 bg-primary rounded-xl flex justify-center items-center cursor-pointer'>
+        <button onClick={onSubmit} className='px-4 py-2 bg-primary rounded-xl flex justify-center items-center cursor-pointer'>
           <p className='text-white'>Submit</p>
         </button>
       </div>
