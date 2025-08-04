@@ -3,6 +3,7 @@ from flask_cors import CORS
 from PyPDF2 import PdfReader
 from graph import graph
 from doc import generate_srs_document
+from supabase_client import supabase
 
 app = Flask(__name__)
 CORS(app)
@@ -10,6 +11,7 @@ CORS(app)
 @app.route('/generate_srs', methods=["POST"])
 def generate_srs():
     prompt = request.form.get('prompt')
+    project_id = request.form.get('projectId')
     files = request.files
     files_content = ''
 
@@ -23,15 +25,38 @@ def generate_srs():
     message = f"User Prompt: {prompt}" + f"Uploaded content: {files_content}"
 
     result = graph.invoke({"user_input": message})
-    print(result)
+    
+    features = []
+    subfeatures = []
 
-    project_name = "AI Generated Project" 
-    company_name = "Your Company Name"
+    completed_frs = result.get("completed_frs", [])
+    for fr in completed_frs:
+        id = fr.get('ID', 0)
+        title = fr.get('Title', '')
+        description = fr.get('Description', '')
+        criteria = fr.get('Acceptance Criteria', [])
+
+        features.append({"id": id, "title": title, "description": description, "project_id": project_id})
+
+        for subfeature in criteria:
+            subfeatures.append({"description": subfeature, "fr_id": id, "project_id": project_id})
+    
+    try:
+        res1 = supabase.table("frs").insert(features).execute()
+        res2 = supabase.table("subfeatures").insert(subfeatures).execute()
+    except Exception as e:
+        return jsonify({"error": "Failed to insert into database", "details": str(e)}), 500
+
+    try:
+        project_name_data = supabase.table("projects").select("name").eq("id", project_id).single().execute()
+    except Exception as e:
+        return jsonify({"error": "Failed to get name"}), 400
+    project_name = project_name_data.data["name"]
+
 
     file_path = generate_srs_document(
         langgraph_state=result,
         project_name=project_name,
-        company_name=company_name
     )
 
     return jsonify({

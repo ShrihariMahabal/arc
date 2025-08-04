@@ -49,7 +49,7 @@ def format_key_name(key):
     return s2.title()
 
 # --- Main generator function (changes are inside) ---
-def generate_srs_document(langgraph_state: dict, project_name: str, company_name: str) -> str:
+def generate_srs_document(langgraph_state: dict, project_name: str) -> str:
     doc = docx.Document()
     
     # --- Title Page (no changes) ---
@@ -64,7 +64,6 @@ def generate_srs_document(langgraph_state: dict, project_name: str, company_name
     doc.add_paragraph()
     details = doc.add_paragraph()
     details.alignment = WD_ALIGN_PARAGRAPH.CENTER
-    set_font_and_style(details.add_run(f"Prepared By: {company_name}\n"), size=12)
     set_font_and_style(details.add_run("Version: 1.0\n"), size=12)
     set_font_and_style(details.add_run(f"Date: {datetime.now().strftime('%B %d, %Y')}"), size=12)
     doc.add_page_break()

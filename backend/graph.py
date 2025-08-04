@@ -105,7 +105,7 @@ def get_intro(state: State):
 def orchestrator(state: State):
     template = ChatPromptTemplate.from_messages([
         ("system", "You are an expert in software requirements gathering. Your task is to gather the functional requirements of an application based on the provided introduction."),
-        ("user", "Based on the provided application overview: {overview} and user input which contains both uploaded file contend and user prompt: {user_input}, please generate the titles of functional requirements. Each title should be a concise description of a functional requirement, e.g., 'User Authentication, Task Creation, Task Deletion.'"),
+        ("user", "Based on the provided application overview: {overview} and user input which contains both uploaded file contend and user prompt: {user_input}, please generate the titles of functional requirements. Each title should be a concise description of a functional requirement, e.g., 'User Authentication, Task Creation, Task Deletion.' Please include every possible functional requirement from start of the app to the end(for example secure user authentication till the last feature of the app)"),
     ])
     prompt = template.invoke({
         "overview": state["overview"],
@@ -118,7 +118,7 @@ def worker(state: WorkerState):
     template = ChatPromptTemplate.from_messages([
         ("system", 
          "You are an expert in software requirements gathering. Your task is to generate a complete single functional requirement in JSON format based on the provided title, description, and application overview. "
-         "The JSON should contain keys: 'Title', 'Description', 'Constraints', and any other relevant keys based on the context. Make sure there are additional relevant keys as well."
+         "The JSON should contain keys: 'Title', 'Description', 'Constraints', 'Acceptance Criteria' and any other relevant keys based on the context. Make sure there are other relevant keys as well. Please note that acceptance criteria should be a list of strings, each string represents a sub feature of the functional requirement title: {title} and it should be a short description of the sub-feature."
          "Ensure the output is a valid JSON object. No preamble/postamble or additional text should be included in the output."),
         ("user", 
          "Based on the following:\n\n"

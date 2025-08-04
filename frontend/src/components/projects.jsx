@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router';
+import { useNavigate, Link } from 'react-router';
 import Modal from '../reusable/modal';
 import { supabase } from '../supabase-client';
 import { v4 as uuidv4 } from 'uuid';
@@ -12,6 +12,8 @@ function Projects() {
   const [url, setUrl] = useState("");
   const [projects, setProjects] = useState([]);
   const [userId, setUserId] = useState("");
+
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchProjects = async () => {
@@ -43,9 +45,19 @@ function Projects() {
     fetchProjects();
   }, []);
 
+  const onGotoProject = async (project) => {
+    const {data: projectData, error: projectError} = await supabase.from("frs").select("*").eq("id", project.id).limit(1).maybeSingle()
+    if (projectError) {
+      console.log("fr retrieving error", projectError)
+    } else {
+      if (projectData) {
+        navigate(`/projects/${project.id}`)
+      } else {
+        navigate(`/projects/create_doc/${project.id}`)
+      }
+    }
+  }
 
-
-  const navigate = useNavigate();
 
   const handleCreateProject = async () => {
     if (!title || !description || !url) {
@@ -69,9 +81,11 @@ function Projects() {
       <ul className='flex flex-wrap space-x-2'>
         {projects.map((project, idx) => (
           <li key={idx}>
-            <Card title={project.name}>
-              <p className='text-sm'>{project.description}</p>
-            </Card>
+            <div className='cursor-pointer' onClick={() => onGotoProject(project)}>
+              <Card title={project.name} width="w-50" height="h-22">
+                <p className='text-sm'>{project.description}</p>
+              </Card>
+            </div>
           </li>
         ))}
       </ul>

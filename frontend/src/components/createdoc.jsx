@@ -1,14 +1,15 @@
 import React, { useState, useRef } from 'react';
 import { Plus, SendHorizontal, X } from 'lucide-react';
 import axios from 'axios';
-import { useParams } from 'react-router';
+import { useParams, useNavigate } from 'react-router';
 
 function CreateDoc() {
 
   const [prompt, setPrompt] = useState('')
   const [files, setFiles] = useState([])
   const [loading, setLoading] = useState(false)
-  const {projectId} = useParams()
+  const {id: projectId} = useParams()
+  const navigate = useNavigate()
   console.log(projectId)
 
   const fileInputRef = useRef(null);
@@ -30,6 +31,7 @@ function CreateDoc() {
     }
     
     const formData = new FormData();
+    formData.append('projectId', projectId)
     if (!prompt) {
       formData.append('prompt', 'Create a well defined SRS document based on the uploaded files')
     } else {
@@ -48,8 +50,10 @@ function CreateDoc() {
       console.log('Upload response:', response.data);
       setPrompt('')
       setFiles([])
+      navigate(`/projects/${projectId}`)
     } catch (err) {
       setLoading(false)
+      alert("error sending data")
       console.error('Error uploading:', err);
     }
   }
