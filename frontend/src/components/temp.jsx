@@ -40,7 +40,7 @@ function temp() {
 
     try {
       setLoading(true)
-      const response = await axios.post('http://localhost:5001/generate_srs', formData);
+      const response = await axios.post('http://localhost:5001/generate_contend', formData);
       setLoading(false)
       console.log('Upload response:', response.data);
       setPrompt('')

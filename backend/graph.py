@@ -118,7 +118,7 @@ def worker(state: WorkerState):
     template = ChatPromptTemplate.from_messages([
         ("system", 
          "You are an expert in software requirements gathering. Your task is to generate a complete single functional requirement in JSON format based on the provided title, description, and application overview. "
-         "The JSON should contain keys: 'Title', 'Description', 'Constraints', 'Acceptance Criteria' and any other relevant keys based on the context. Make sure there are other relevant keys as well. Please note that acceptance criteria should be a list of strings, each string represents a sub feature of the functional requirement title: {title} and it should be a short description of the sub-feature."
+         "The JSON should contain keys: 'Title', 'Description', 'Constraints', 'Subtasks' and any other relevant keys based on the context. Make sure there are other relevant keys as well. Please note that subtasks should be a list of strings, each string represents a sub feature of the functional requirement title: {title} and it should be a short description of the sub-feature. Make sure that the Subtasks key is always 'Subtasks', nothing else"
          "Ensure the output is a valid JSON object. No preamble/postamble or additional text should be included in the output."),
         ("user", 
          "Based on the following:\n\n"
@@ -184,4 +184,5 @@ graph = graph_builder.compile()
 # result = graph.invoke({
 #     "user_input": "Create a task management application that allows users to create, edit, and delete tasks. I dont have much information about the application, so add your own assumptions.",
 # })
-# print(result["completed_frs"])
+
+# print(result)

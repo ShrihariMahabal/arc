@@ -32,7 +32,7 @@ function Projects() {
 
       const { data: projectsData, error: projectsError } = await supabase
         .from("projects")
-        .select("*")
+        .select("*, users (username)")
         .eq("admin", userId);
 
       if (projectsError) {
@@ -46,7 +46,7 @@ function Projects() {
   }, []);
 
   const onGotoProject = async (project) => {
-    const {data: projectData, error: projectError} = await supabase.from("frs").select("*").eq("id", project.id).limit(1).maybeSingle()
+    const { data: projectData, error: projectError } = await supabase.from("frs").select("*").eq("id", project.id).limit(1).maybeSingle()
     if (projectError) {
       console.log("fr retrieving error", projectError)
     } else {
@@ -78,17 +78,21 @@ function Projects() {
     <div className='min-h-screen w-full bg-gray-50 p-4 relative'>
       {isModalOpen && <div className='fixed inset-0 bg-black opacity-50 backdrop-blur-xl z-10'></div>}
       <h1 className='text-2xl font-semibold mb-2'>Your Projects</h1>
-      <ul className='flex flex-wrap space-x-2'>
+      <ul className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4'>
         {projects.map((project, idx) => (
           <li key={idx}>
-            <div className='cursor-pointer' onClick={() => onGotoProject(project)}>
-              <Card title={project.name} width="w-50" height="h-22">
-                <p className='text-sm'>{project.description}</p>
+            <div onClick={() => onGotoProject(project)}>
+              <Card title={project.name}>
+                <p className='text-sm mb-1'>{project.description}</p>
+                <p className='text-xs text-gray-500'>
+                  Created by: <span className='font-medium text-gray-700'>{project.users.username}</span>
+                </p>
               </Card>
             </div>
           </li>
         ))}
       </ul>
+
       <div onClick={() => setIsModalOpen(true)} className='px-3 py-2 bg-primary rounded-xl text-white fixed bottom-6 right-6 font-semibold hover:scale-110 transition-all cursor-pointer'>Create Project</div>
       {isModalOpen && <div className='fixed left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2 z-50'>
         <Modal title="Create Project" onClose={() => setIsModalOpen(false)} onSubmit={handleCreateProject}>

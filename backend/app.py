@@ -4,12 +4,24 @@ from PyPDF2 import PdfReader
 from graph import graph
 from doc import generate_srs_document
 from supabase_client import supabase
+from pydantic import BaseModel
+from typing import Any
 
 app = Flask(__name__)
 CORS(app)
 
-@app.route('/generate_srs', methods=["POST"])
-def generate_srs():
+def serialize_pydantic(obj: Any) -> Any:
+    if isinstance(obj, BaseModel):
+        return obj.model_dump()
+    elif isinstance(obj, list):
+        return [serialize_pydantic(item) for item in obj]
+    elif isinstance(obj, dict):
+        return {key: serialize_pydantic(value) for key, value in obj.items()}
+    else:
+        return obj
+
+@app.route('/generate_content', methods=["POST"])
+def generate_content():
     prompt = request.form.get('prompt')
     project_id = request.form.get('projectId')
     files = request.files
@@ -30,39 +42,60 @@ def generate_srs():
     subfeatures = []
 
     completed_frs = result.get("completed_frs", [])
+    itr = 0
+
     for fr in completed_frs:
         id = fr.get('ID', 0)
         title = fr.get('Title', '')
         description = fr.get('Description', '')
-        criteria = fr.get('Acceptance Criteria', [])
+        subtasks = fr.get('Subtasks', [])
 
         features.append({"id": id, "title": title, "description": description, "project_id": project_id})
 
-        for subfeature in criteria:
-            subfeatures.append({"description": subfeature, "fr_id": id, "project_id": project_id})
-    
-    try:
-        res1 = supabase.table("frs").insert(features).execute()
-        res2 = supabase.table("subfeatures").insert(subfeatures).execute()
-    except Exception as e:
-        return jsonify({"error": "Failed to insert into database", "details": str(e)}), 500
+        for i, subfeature in enumerate(subtasks):
+            subfeatures.append({"id": itr, "description": subfeature, "fr_id": id, "project_id": project_id})
+            itr += 1
 
-    try:
-        project_name_data = supabase.table("projects").select("name").eq("id", project_id).single().execute()
-    except Exception as e:
-        return jsonify({"error": "Failed to get name"}), 400
-    project_name = project_name_data.data["name"]
-
-
-    file_path = generate_srs_document(
-        langgraph_state=result,
-        project_name=project_name,
-    )
+    serialized_result = serialize_pydantic(result)
 
     return jsonify({
-        'message': 'Files and prompt received successfully',
-        'file_path': file_path
+        'message': 'Success',
+        'features': features,
+        'subfeatures': subfeatures,
+        'langgraph_state': serialized_result
     }), 200
+
+@app.route('/generate_srs', methods=['POST'])
+def generate_srs():
+    data = request.get_json()
+    frs = data.get("frs")
+    subfeatures = data.get("subtasks")
+    project_id = data.get("project_id")
+    langgraph_state = data.get("langgraph_state")
+    project_name_data = supabase.table("projects").select("name").eq("id", project_id).single().execute()
+    project_name = project_name_data.data["name"]
+
+    print(project_name)
+    print("lang_state ", langgraph_state)
+    print("frs", frs)
+    print("sub", subfeatures)
+
+    try:
+        res1 = supabase.table("frs").insert(frs).execute()
+        res2 = supabase.table("subfeatures").insert(subfeatures).execute()
+    except Exception as e:
+        print(e)
+        return jsonify({"error": "Failed to insert into database", "details": str(e)}), 500
+
+    file_path = generate_srs_document(
+        project_name=project_name,
+        langgraph_state=langgraph_state,
+        frs=frs,
+        subfeatures=subfeatures,
+        output_path=f"./docs/{project_name}.docx"
+    )
+
+    return jsonify({"message": "Success", "srs_path": file_path}), 200
 
 
 if __name__ == "__main__":
