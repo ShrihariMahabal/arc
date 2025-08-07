@@ -10,6 +10,7 @@ function CreateDoc() {
   const [loading, setLoading] = useState(false)
   const [features, setFeatures] = useState([])
   const [subfeatures, setSubfeatures] = useState([])
+  const [members, setMembers] = useState([])
   const { id: projectId } = useParams()
   const [graphState, setGraphState] = useState({})
   const navigate = useNavigate()
@@ -53,9 +54,11 @@ function CreateDoc() {
       setGraphState(response.data.langgraph_state)
       setFeatures(response.data.features)
       setSubfeatures(response.data.subfeatures)
+      setMembers(response.data.project_members)
       console.log("features", response.data.features)
       console.log("subfeatures", response.data.subfeatures)
       console.log("state", response.data.langgraph_state)
+      console.log("members", response.data.project_members)
       setPrompt('')
       setFiles([])
       // navigate(`/projects/${projectId}`)
@@ -71,49 +74,55 @@ function CreateDoc() {
   }
 
   const handleFrChange = (id, key, value) => {
-    const updatedFeatures = features.map((feat) => feat.id === id ? {...feat, [key]: value}: feat)
+    const updatedFeatures = features.map((feat) => feat.id === id ? { ...feat, [key]: value } : feat)
     setFeatures(updatedFeatures)
   }
 
   const handleSubtaskChange = (id, fr_id, value) => {
-    const updatedSubFeatures = subfeatures.map((subfeat) => (subfeat.id === id && subfeat.fr_id === fr_id ? {...subfeat, description: value} : subfeat))
+    const updatedSubFeatures = subfeatures.map((subfeat) => (subfeat.id === id && subfeat.fr_id === fr_id ? { ...subfeat, description: value } : subfeat))
     setSubfeatures(updatedSubFeatures)
   }
 
   const handleSubtaskAdd = (featId) => {
     const newLastId = subfeatures.length > 0 ? (subfeatures[subfeatures.length - 1].id) + 1 : 0
     console.log(newLastId)
-    const newSubFeature = {id: newLastId, description: "", fr_id: featId, project_id: projectId}
+    const newSubFeature = { id: newLastId, description: "", fr_id: featId, project_id: projectId, assigned_to: "" }
     setSubfeatures(s => [...s, newSubFeature])
     console.log(newSubFeature)
   }
 
   const handleSubtaskDelete = (featId, subfeatId) => {
-    const updatedSubFeatures = subfeatures.filter((subfeat) => subfeat.fr_id !== featId || subfeat.id !== subfeatId).map((subfeat) => subfeat.id > subfeatId ? {...subfeat, id: subfeat.id - 1} : subfeat)
+    const updatedSubFeatures = subfeatures.filter((subfeat) => subfeat.fr_id !== featId || subfeat.id !== subfeatId).map((subfeat) => subfeat.id > subfeatId ? { ...subfeat, id: subfeat.id - 1 } : subfeat)
     setSubfeatures(updatedSubFeatures)
     console.log(updatedSubFeatures)
   }
 
   const handleAddFR = () => {
-    const newFR = {id: features[features.length-1].id + 1, title: "", description: "", project_id: projectId}
+    const newFR = { id: features[features.length - 1].id + 1, title: "", description: "", project_id: projectId }
     setFeatures(f => [...f, newFR])
     handleSubtaskAdd(newFR.id)
     console.log(newFR)
   }
 
   const handleFRDelete = (featId) => {
-    const newFeatures = features.filter((feat) => feat.id !== featId).map((feat) => feat.id > featId ? {...feat, id: feat.id - 1} : feat)
-    const newSubFeatures = subfeatures.filter((subfeat) => subfeat.fr_id !== featId).map((subfeat) => subfeat.fr_id > featId ? {...subfeat, fr_id: subfeat.fr_id - 1} : subfeat)
+    const newFeatures = features.filter((feat) => feat.id !== featId).map((feat) => feat.id > featId ? { ...feat, id: feat.id - 1 } : feat)
+    const newSubFeatures = subfeatures.filter((subfeat) => subfeat.fr_id !== featId).map((subfeat) => subfeat.fr_id > featId ? { ...subfeat, fr_id: subfeat.fr_id - 1 } : subfeat)
     setFeatures(newFeatures)
     setSubfeatures(newSubFeatures)
     console.log(newSubFeatures)
   }
 
+  const handleAssignmentChange = (subfeatId, value) => {
+    const updatedSubFeatures = subfeatures.map((subfeat) => subfeat.id === subfeatId ? {...subfeat, assigned_to: value} : subfeat)
+    setSubfeatures(updatedSubFeatures)
+    console.log(updatedSubFeatures)
+  }
+
   const handleDocSubmit = async () => {
     try {
-      const response = await axios.post('http://localhost:5001/generate_srs', {frs: features, subtasks: subfeatures, project_id: projectId, langgraph_state: graphState})
+      const response = await axios.post('http://localhost:5001/generate_srs', { frs: features, subtasks: subfeatures, project_id: projectId, langgraph_state: graphState })
       navigate('/')
-    } catch(error) {
+    } catch (error) {
       console.log("Doc Submit Error: ", error)
     }
   }
@@ -148,6 +157,15 @@ function CreateDoc() {
                 {subfeatures.filter((feat) => (feat.fr_id === feature.id)).map((subfeature, idx2) => (
                   <li key={idx2} className='w-full flex items-center'>
                     <input type="text" name={`subfeat${idx2}`} id={`subfeat${idx2}`} value={subfeature.description} onChange={(e) => handleSubtaskChange(subfeature.id, feature.id, e.target.value)} className='w-full bg-gray-100 font-medium text-sm text-gray-800 border border-gray-300 rounded-lg px-2 py-1' />
+                    <div className='flex items-center bg-gray-200 rounded-xl ml-2 h-6 w-40'>
+                      <p className='bg-gray-300 h-full rounded-xl text-sm px-2 flex justify-center items-center'>Assign</p>
+                      <select name="assignment" id="assignment" defaultValue={subfeature.assigned_to} onChange={(e) => handleAssignmentChange(subfeature.id, e.target.value)} className='ml-1'>
+                        <option value="">Choose</option>
+                        {members.map((member) => (
+                          <option key={`${member.users.user_id}`} value={`${member.users.user_id}`}>{member.users.username}</option>
+                        ))}
+                      </select>
+                    </div>
                     <div onClick={() => handleSubtaskDelete(feature.id, subfeature.id)} className='p-1 rounded-full hover:bg-gray-200 cursor-pointer ml-1'>
                       <Trash size={18}></Trash>
                     </div>

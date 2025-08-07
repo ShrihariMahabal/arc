@@ -24,8 +24,9 @@ os.environ["LANGCHAIN_TRACING_V2"] = "true"
 os.environ["LANGCHAIN_PROJECT"] = "arc"
 
 llm = ChatGroq(groq_api_key=groq_key, model_name="gemma2-9b-it")
-# llm = ChatGoogleGenerativeAI(
-#     model="gemini-2.5-pro",
+llm1 = ChatGroq(groq_api_key=groq_key, model_name="deepseek-r1-distill-llama-70b")
+# llm1 = ChatGoogleGenerativeAI(
+#     model="gemini-2.5-flash",
 #     google_api_key=google_key,
 #     temperature=0.3
 # )
@@ -72,6 +73,7 @@ class NFRs(BaseModel):
 
 class State(TypedDict):
     user_input: str
+    members: list[dict]
     frs_titles: list[FRTitle]
     completed_frs: Annotated[list, operator.add]
     purpose: str
@@ -85,6 +87,8 @@ class WorkerState(TypedDict):
     overview: list[str]
     title: FRTitle
     completed_frs: Annotated[list, operator.add]
+    members: list[dict]
+    last_assignments: Annotated[list[str], operator.add]
 
 llm_for_fr_titles = llm.with_structured_output(FRTitles)
 llm_for_intro = llm.with_structured_output(Intro)
@@ -119,12 +123,14 @@ def worker(state: WorkerState):
         ("system", 
          "You are an expert in software requirements gathering. Your task is to generate a complete single functional requirement in JSON format based on the provided title, description, and application overview. "
          "The JSON should contain keys: 'Title', 'Description', 'Constraints', 'Subtasks' and any other relevant keys based on the context. Make sure there are other relevant keys as well. Please note that subtasks should be a list of strings, each string represents a sub feature of the functional requirement title: {title} and it should be a short description of the sub-feature. Make sure that the Subtasks key is always 'Subtasks', nothing else"
+         "The JSON should also have the key: 'assigned' which should contain the user_id of the member whose skill set is the most relevant. The list of members along with their skills and their user_id will be given to you. Please ensure you are not repeating the same user_id multiple times and assigning tasks to other users as well. Make sure the assigned key should not have the same value as the last_assigment: {last_assignment}"
          "Ensure the output is a valid JSON object. No preamble/postamble or additional text should be included in the output."),
         ("user", 
          "Based on the following:\n\n"
          "Application Overview: {overview}\n\n"
          "Functional Requirement Title: {title}\n"
          "Functional Requirement Description: {description}\n\n"
+         "Members: {members}"
          "Please generate a detailed, complete functional requirement in valid JSON format.")
     ])
     
@@ -132,6 +138,8 @@ def worker(state: WorkerState):
         "overview": state["overview"],
         "title": state["title"].title,
         "description": state["title"].description,
+        "members": state["members"],
+        "last_assignment": state["last_assignment"]
     })
 
     res = llm.invoke(prompt)
@@ -149,11 +157,16 @@ def worker(state: WorkerState):
         print("JSON decode error:", e)
         print("Raw content that failed:\n", raw_content)
         raise e  # Or return a default/fallback object
+    last = ''
+    if "assigned" in parsed:
+        last = parsed["assigned"]
+    elif "Assigned" in parsed:
+        last = parsed["Assigned"]
 
-    return {"completed_frs": [parsed]}
+    return {"completed_frs": [parsed], "last_assignment": [last]}
 
 def assign(state: State):
-    return [Send("worker", {"title": title, "overview": state["overview"], "idx": i}) for i, title in enumerate(state["frs_titles"])]
+    return [Send("worker", {"title": title, "overview": state["overview"], "idx": i, "members": state["members"], "last_assignment": ""}) for i, title in enumerate(state["frs_titles"])]
 
 def get_nfrs(state: State):
     template = ChatPromptTemplate.from_messages([
@@ -183,6 +196,7 @@ graph_builder.add_edge("worker", END)
 graph = graph_builder.compile()
 # result = graph.invoke({
 #     "user_input": "Create a task management application that allows users to create, edit, and delete tasks. I dont have much information about the application, so add your own assumptions.",
+#     "members": [{"user_id": "548d65f4-de57-40ac-ba3d-57a19776fba9", "username": "shrihari", "skills": "react, flask"}, {"user_id": "6cc80aaa-ea19-43a3-9f75-b8888e27dd7e", "username": "shrihari1", "skills": "vue, node, express"}]
 # })
 
 # print(result)

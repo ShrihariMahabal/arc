@@ -9,6 +9,7 @@ function Register() {
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
     const [skills, setSkills] = useState('')
+    const [githubUsername, setGithubUsername] = useState('')
 
     const navigate = useNavigate()
 
@@ -36,7 +37,7 @@ function Register() {
                 return
             }
             else {
-                navigate('/')
+                navigate('/login')
             }
         }
     };
@@ -57,6 +58,10 @@ function Register() {
                     <div>
                         <label htmlFor="skills" className='font-medium'>Skills</label>
                         <input type="text" placeholder='Enter your skills' id="skills" value={skills} onChange={(e) => setSkills(e.target.value)} className='border border-gray-300 rounded-md p-2 w-full focus:ring-gray-900 focus:border-gray-900 focus:outline-none' />
+                    </div>
+                    <div>
+                        <label htmlFor="github_username" className='font-medium'>Github Username</label>
+                        <input type="text" placeholder='Enter your github username' id="github_username" value={githubUsername} onChange={(e) => setGithubUsername(e.target.value)} className='border border-gray-300 rounded-md p-2 w-full focus:ring-gray-900 focus:border-gray-900 focus:outline-none' />
                     </div>
                     <div>
                         <label htmlFor="password" className='font-medium'>Password</label>

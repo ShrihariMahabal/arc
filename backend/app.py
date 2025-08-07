@@ -36,7 +36,14 @@ def generate_content():
             files_content += f'{filename}: {text} \n'
     message = f"User Prompt: {prompt}" + f"Uploaded content: {files_content}"
 
-    result = graph.invoke({"user_input": message})
+    project_members = []
+    try:
+        project_members_data = supabase.table("members").select("users (user_id, username, skills)").execute()
+        project_members = project_members_data.data
+    except Exception as e:
+        print("project fetching error", e)
+
+    result = graph.invoke({"user_input": message, "members": project_members})
     
     features = []
     subfeatures = []
@@ -49,11 +56,16 @@ def generate_content():
         title = fr.get('Title', '')
         description = fr.get('Description', '')
         subtasks = fr.get('Subtasks', [])
+        assigned_to = ''
+        if "assigned" in fr:
+            assigned_to = fr.get('assigned', '')
+        elif "Assigned" in fr:
+            assigned_to = fr.get('Assigned', '')
 
         features.append({"id": id, "title": title, "description": description, "project_id": project_id})
 
         for i, subfeature in enumerate(subtasks):
-            subfeatures.append({"id": itr, "description": subfeature, "fr_id": id, "project_id": project_id})
+            subfeatures.append({"id": itr, "description": subfeature, "fr_id": id, "project_id": project_id, "assigned_to": assigned_to})
             itr += 1
 
     serialized_result = serialize_pydantic(result)
@@ -62,7 +74,8 @@ def generate_content():
         'message': 'Success',
         'features': features,
         'subfeatures': subfeatures,
-        'langgraph_state': serialized_result
+        'langgraph_state': serialized_result,
+        'project_members': project_members
     }), 200
 
 @app.route('/generate_srs', methods=['POST'])
