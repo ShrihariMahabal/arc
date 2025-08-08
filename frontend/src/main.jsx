@@ -11,6 +11,7 @@ import Projects from './components/projects.jsx'
 import CreateDoc from './components/createdoc.jsx';
 import ProjectLayout from './components/projectlayout.jsx';
 import ProjectPage from './components/projectpage.jsx';
+import WaitingPage from './components/waiting.jsx';
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
@@ -23,6 +24,7 @@ createRoot(document.getElementById('root')).render(
           <Route index element={<Temp1 />} />
           <Route path='projects' element={<ProjectLayout />}>
             <Route index element={<Projects />} />
+            <Route path='loading' element={<WaitingPage />}></Route>
             <Route path=':id' element={<ProjectPage/>}></Route>
             <Route path='create_doc/:id' element={<CreateDoc />} />
           </Route>

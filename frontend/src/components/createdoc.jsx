@@ -14,7 +14,7 @@ function CreateDoc() {
   const { id: projectId } = useParams()
   const [graphState, setGraphState] = useState({})
   const navigate = useNavigate()
-  console.log(projectId)
+  console.log("projectId", projectId)
 
   const fileInputRef = useRef(null);
 

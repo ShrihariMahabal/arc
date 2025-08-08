@@ -32,7 +32,7 @@ function Projects() {
       }
 
       const userId = session.user.id;
-      console.log("current user: ",userId)
+      console.log("current user: ", userId)
       setUserId(userId);
 
       const { data: projectsData, error: projectsError } = await supabase
@@ -75,6 +75,7 @@ function Projects() {
   const handleMemberAdd = (user) => {
     setQuery("");
     setMembers(m => [...m, user]);
+    console.log(user)
   }
 
   const handleMemberRemove = (member) => {
@@ -98,24 +99,33 @@ function Projects() {
 
   const handleCreateProject = async () => {
     if (!title || !description || !url || members.length === 0) {
-      alert("Please enter all details")
-      return
-    }
-    let uid = uuidv4();
-    const { data: projectData, error: projectError } = await supabase.from("projects").insert({ "name": title, "description": description, "github_url": url, "invite_code": uid, admin: userId }).select().single();
-    if (projectError) {
-      console.log(error);
+      alert("Please enter all details");
       return;
     }
-    const projectId = projectData.id;
-    const projectMembers = members.map((member) => ({project_id: projectId, user_id: member.user_id}));
-    const  {data: memberData, error: memberError} = await supabase.from("members").insert(projectMembers);
-    if (memberError) {
-      console.log("error inserting members", memberError);
-      return
+
+    const CLIENT_ID = import.meta.env.VITE_GITHUB_CLIENT_ID;
+    const { data: { session } } = await supabase.auth.getSession();
+    const accessToken = session?.access_token;
+
+    if (!accessToken) {
+      alert("User not logged in");
+      return;
     }
-    navigate(`/projects/create_doc/${projectId}`);
-  }
+
+    const redirectUri = `https://a2336ee039eb.ngrok-free.app/github/callback`;
+
+    // Save project data to localStorage before redirect
+    localStorage.setItem("newProjectData", JSON.stringify({
+      title: title,
+      description: description,
+      url: url,
+      members: members
+    }));
+
+    // Redirect to GitHub OAuth
+    window.location.href = `https://github.com/login/oauth/authorize?client_id=${CLIENT_ID}&redirect_uri=${redirectUri}&state=${accessToken}&scope=repo,admin:repo_hook`;
+  };
+
 
   return (
     <div className='min-h-screen w-full bg-gray-50 p-4 relative'>

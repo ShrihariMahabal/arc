@@ -1,4 +1,5 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, redirect
+import requests
 from flask_cors import CORS
 from PyPDF2 import PdfReader
 from graph import graph
@@ -6,6 +7,10 @@ from doc import generate_srs_document
 from supabase_client import supabase
 from pydantic import BaseModel
 from typing import Any
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
 
 app = Flask(__name__)
 CORS(app)
@@ -24,6 +29,7 @@ def serialize_pydantic(obj: Any) -> Any:
 def generate_content():
     prompt = request.form.get('prompt')
     project_id = request.form.get('projectId')
+    print(project_id)
     files = request.files
     files_content = ''
 
@@ -38,8 +44,9 @@ def generate_content():
 
     project_members = []
     try:
-        project_members_data = supabase.table("members").select("users (user_id, username, skills)").execute()
+        project_members_data = supabase.table("members").select("users (user_id, username, skills)").eq("project_id", project_id).execute()
         project_members = project_members_data.data
+        print(project_members)
     except Exception as e:
         print("project fetching error", e)
 
@@ -109,6 +116,154 @@ def generate_srs():
     )
 
     return jsonify({"message": "Success", "srs_path": file_path}), 200
+
+
+@app.route('/github/webhook', methods=['POST'])
+def github_webhook():
+    payload = request.json
+    print("Received GitHub webhook payload:", payload)
+    # You can handle PR events, comments, etc., here.
+    return jsonify({'status': 'Webhook received'}), 200
+
+
+@app.route('/github/callback')
+def github_callback():
+    code = request.args.get('code')
+    supabase_token = request.args.get("state")  # Get from state param
+
+    # Environment variables
+    CLIENT_ID = os.getenv("GITHUB_CLIENT_ID")
+    SECRET_KEY = os.getenv("GITHUB_CLIENT_SECRET")
+
+    # Get user from Supabase session token
+    user_resp = supabase.auth.get_user(supabase_token)
+    if not user_resp.user:
+        return "Invalid Supabase session token", 401
+
+    user_id = user_resp.user.id  # or user_resp.user['id']
+
+    # Exchange GitHub code for access token
+    token_res = requests.post(
+        'https://github.com/login/oauth/access_token',
+        headers={'Accept': 'application/json'},
+        data={
+            'client_id': CLIENT_ID,
+            'client_secret': SECRET_KEY,
+            'code': code
+        }
+    )
+    token_json = token_res.json()
+    access_token = token_json.get('access_token')
+    if not access_token:
+        return "GitHub OAuth failed", 400
+
+    # Get GitHub user info
+    user_info = requests.get(
+        'https://api.github.com/user',
+        headers={'Authorization': f'token {access_token}'}
+    ).json()
+
+    github_username = user_info.get('login')
+    if not github_username:
+        return "Failed to fetch GitHub user info", 400
+
+    # Save to Supabase
+    supabase.table('github_tokens').insert({
+        'user_id': user_id,
+        'github_username': github_username,
+        'access_token': access_token,
+        'is_admin': True
+    }).execute()
+
+    return redirect("http://localhost:5173/projects/loading")
+
+def get_supabase_user_id_from_header(request):
+    auth_header = request.headers.get("Authorization", "")
+    if auth_header.startswith("Bearer "):
+        return auth_header.replace("Bearer ", "")
+    return None
+
+
+@app.route('/projects/create', methods=['POST'])
+def create_project():
+    data = request.json
+    user_id = get_supabase_user_id_from_header(request)
+
+    # Save project and members in Supabase
+    project = {
+        'name': data['title'],
+        'description': data['description'],
+        'github_url': data['url'],
+        'admin': user_id
+    }
+    inserted_project = supabase.table("projects").insert(project).execute().data[0]
+
+    for member in data['members']:
+        supabase.table("members").insert({
+            'project_id': inserted_project['id'],
+            'user_id': member['user_id'] 
+        }).execute()
+
+    try:
+        # Parse GitHub owner/repo from URL
+        owner_repo = data['url'].replace("https://github.com/", "")
+        owner, repo = owner_repo.split('/')
+
+        # Get access token from github_tokens table
+        access_token = supabase.table("github_tokens").select("access_token").eq("user_id", user_id).execute().data[0]['access_token']
+
+        print("Creating webhook on:", f"{owner}/{repo}")
+        print("Using token:", access_token)
+
+        # Webhook URL
+        webhook_url = "https://a2336ee039eb.ngrok-free.app/github/webhook"
+
+        # Step 1: Check if webhook already exists
+        existing_hooks_resp = requests.get(
+            f'https://api.github.com/repos/{owner}/{repo}/hooks',
+            headers={
+                'Authorization': f'token {access_token}',
+                'Accept': 'application/vnd.github.v3+json'
+            }
+        )
+
+        if existing_hooks_resp.status_code == 200:
+            existing_hooks = existing_hooks_resp.json()
+            for hook in existing_hooks:
+                if hook['config'].get('url') == webhook_url:
+                    print("Webhook already exists. Skipping creation.")
+                    break
+            else:
+                # Step 2: Webhook not found, create it
+                response = requests.post(
+                    f'https://api.github.com/repos/{owner}/{repo}/hooks',
+                    headers={
+                        'Authorization': f'token {access_token}',
+                        'Accept': 'application/vnd.github.v3+json'
+                    },
+                    json={
+                        'name': 'web',
+                        'active': True,
+                        'events': ['pull_request', 'pull_request_review'],
+                        'config': {
+                            'url': webhook_url,
+                            'content_type': 'json'
+                        }
+                    }
+                )
+                print("Webhook creation response:", response.status_code, response.json())
+        else:
+            print("Failed to fetch existing webhooks:", existing_hooks_resp.status_code, existing_hooks_resp.text)
+
+    except Exception as e:
+        print("Exception during webhook setup:", e)
+
+    return jsonify({
+        'status': 'Project created and webhook handled',
+        'project_id': inserted_project['id']
+    })
+
+
 
 
 if __name__ == "__main__":
