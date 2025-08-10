@@ -84,10 +84,11 @@ function Projects() {
   }
 
   const onGotoProject = async (project) => {
-    const { data: projectData, error: projectError } = await supabase.from("frs").select("*").eq("id", project.id).limit(1).maybeSingle()
+    const { data: projectData, error: projectError } = await supabase.from("frs").select("*").eq("id", project.id)
     if (projectError) {
       console.log("fr retrieving error", projectError)
     } else {
+      console.log(projectData)
       if (projectData) {
         navigate(`/projects/${project.id}`)
       } else {
@@ -112,7 +113,7 @@ function Projects() {
       return;
     }
 
-    const redirectUri = `https://a2336ee039eb.ngrok-free.app/github/callback`;
+    const redirectUri = `https://62612fcddaa5.ngrok-free.app/github/callback`;
 
     // Save project data to localStorage before redirect
     localStorage.setItem("newProjectData", JSON.stringify({

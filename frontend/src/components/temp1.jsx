@@ -1,8 +1,12 @@
 import React from 'react'
 
 function temp1() {
+  const handleClick = (e) => {
+    console.log(e.target.checked)
+  }
+
   return (
-    <div>da</div>
+    <input type="checkbox" onClick={handleClick} />
   )
 }
 

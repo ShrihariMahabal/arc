@@ -95,6 +95,13 @@ def generate_srs():
     project_name_data = supabase.table("projects").select("name").eq("id", project_id).single().execute()
     project_name = project_name_data.data["name"]
 
+    for subfeature in subfeatures:
+        assigment = subfeature.get("assigned_to", "")
+        if len(assigment) > 0:
+            subfeature["status"] = "ongoing"
+        else:
+            subfeature["status"] = "todo"
+
     print(project_name)
     print("lang_state ", langgraph_state)
     print("frs", frs)
@@ -129,18 +136,16 @@ def github_webhook():
 @app.route('/github/callback')
 def github_callback():
     code = request.args.get('code')
-    supabase_token = request.args.get("state")  # Get from state param
+    supabase_token = request.args.get("state")
 
-    # Environment variables
     CLIENT_ID = os.getenv("GITHUB_CLIENT_ID")
     SECRET_KEY = os.getenv("GITHUB_CLIENT_SECRET")
 
-    # Get user from Supabase session token
     user_resp = supabase.auth.get_user(supabase_token)
     if not user_resp.user:
         return "Invalid Supabase session token", 401
 
-    user_id = user_resp.user.id  # or user_resp.user['id']
+    user_id = user_resp.user.id 
 
     # Exchange GitHub code for access token
     token_res = requests.post(
@@ -157,7 +162,6 @@ def github_callback():
     if not access_token:
         return "GitHub OAuth failed", 400
 
-    # Get GitHub user info
     user_info = requests.get(
         'https://api.github.com/user',
         headers={'Authorization': f'token {access_token}'}
@@ -167,7 +171,6 @@ def github_callback():
     if not github_username:
         return "Failed to fetch GitHub user info", 400
 
-    # Save to Supabase
     supabase.table('github_tokens').insert({
         'user_id': user_id,
         'github_username': github_username,
@@ -216,7 +219,7 @@ def create_project():
         print("Using token:", access_token)
 
         # Webhook URL
-        webhook_url = "https://a2336ee039eb.ngrok-free.app/github/webhook"
+        webhook_url = "https://62612fcddaa5.ngrok-free.app/github/webhook"
 
         # Step 1: Check if webhook already exists
         existing_hooks_resp = requests.get(

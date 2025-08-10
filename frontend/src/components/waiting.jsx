@@ -39,11 +39,9 @@ function WaitingPage() {
 
         const projectId = response.data.project_id;
 
-        // Clean up
         localStorage.removeItem("newProjectData");
         localStorage.removeItem("projectSubmitted");
 
-        // Navigate to create_doc
         navigate(`/projects/create_doc/${projectId}`);
       } catch (error) {
         console.error("Error creating project:", error);
