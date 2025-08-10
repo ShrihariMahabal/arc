@@ -128,9 +128,33 @@ def generate_srs():
 @app.route('/github/webhook', methods=['POST'])
 def github_webhook():
     payload = request.json
-    print("Received GitHub webhook payload:", payload)
-    # You can handle PR events, comments, etc., here.
-    return jsonify({'status': 'Webhook received'}), 200
+    event = request.headers.get("X-GitHub-Event")
+    
+    if event == "pull_request":
+        action = payload.get("action")
+        pr = payload.get("pull_request", {})
+        
+        if action == "closed" and pr.get("merged") is True:
+            body = pr.get("body", "")
+            repo_url = payload.get("repository").get("full_name")
+            repo = "https://github.com/" + repo_url
+            sender = pr.get("user").get("login")
+            subtask_id = ""
+
+            if '#' in body:
+                itr = body.index("#")+1
+                while itr < len(body) and body[itr].isdigit():
+                    subtask_id += body[itr]
+                    itr += 1
+            
+            try:
+                project_data = supabase.table("projects").select("id").eq("github_url", repo).execute()
+                project_id = project_data.data[0]["id"]
+                subtask_update_data = supabase.table("subfeatures").update({"status": "complete"}).eq("id", int(subtask_id)).eq("project_id", project_id).execute()
+            except Exception as e:
+                print("error updating database", e)
+            
+    return jsonify({"message": "webhook handled successfully"}), 200
 
 
 @app.route('/github/callback')
@@ -212,7 +236,6 @@ def create_project():
         owner_repo = data['url'].replace("https://github.com/", "")
         owner, repo = owner_repo.split('/')
 
-        # Get access token from github_tokens table
         access_token = supabase.table("github_tokens").select("access_token").eq("user_id", user_id).execute().data[0]['access_token']
 
         print("Creating webhook on:", f"{owner}/{repo}")
@@ -221,7 +244,6 @@ def create_project():
         # Webhook URL
         webhook_url = "https://62612fcddaa5.ngrok-free.app/github/webhook"
 
-        # Step 1: Check if webhook already exists
         existing_hooks_resp = requests.get(
             f'https://api.github.com/repos/{owner}/{repo}/hooks',
             headers={

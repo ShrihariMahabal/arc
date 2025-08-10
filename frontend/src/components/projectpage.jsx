@@ -126,7 +126,7 @@ function ProjectPage() {
                             />
                           </td>
                           <td className="px-6 py-4 text-gray-800 border-r border-gray-200">
-                            {task.description}
+                            {task.description + " " + "(#" + task.id + ")"}
                           </td>
                           <td className="px-6 py-4 text-center text-gray-600 text-sm">
                             {task.users?.username ? (
@@ -174,7 +174,7 @@ function ProjectPage() {
                             />
                           </td>
                           <td className="px-6 py-4 text-gray-800 border-r border-gray-200">
-                            {task.description}
+                            {task.description + " " + "(#" + task.id + ")"}
                           </td>
                           <td className="px-6 py-4 text-center text-gray-600 text-sm">
                             {task.users?.username ? (
@@ -223,7 +223,7 @@ function ProjectPage() {
                             />
                           </td>
                           <td className="px-6 py-4 text-gray-800 border-r border-gray-200">
-                            {task.description}
+                            {task.description + " " + "(#" + task.id + ")"}
                           </td>
                           <td className="px-6 py-4 text-center text-gray-600 text-sm">
                             {task.users?.username ? (
