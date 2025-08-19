@@ -117,6 +117,12 @@ function CreateDoc() {
     setSubfeatures(updatedSubFeatures)
     console.log(updatedSubFeatures)
   }
+  
+  const handlePriorityChange = (subfeatId, value) => {
+    const updatedSubFeatures = subfeatures.map((subfeat) => subfeat.id === subfeatId ? {...subfeat, priority: value} : subfeat)
+    setSubfeatures(updatedSubFeatures)
+    console.log(updatedSubFeatures)
+  }
 
   const handleDocSubmit = async () => {
     try {
@@ -157,6 +163,14 @@ function CreateDoc() {
                 {subfeatures.filter((feat) => (feat.fr_id === feature.id)).map((subfeature, idx2) => (
                   <li key={idx2} className='w-full flex items-center'>
                     <input type="text" name={`subfeat${idx2}`} id={`subfeat${idx2}`} value={subfeature.description} onChange={(e) => handleSubtaskChange(subfeature.id, feature.id, e.target.value)} className='w-full bg-gray-100 font-medium text-sm text-gray-800 border border-gray-300 rounded-lg px-2 py-1' />
+                    <div className='flex items-center bg-gray-200 rounded-xl ml-2 h-6 w-30'>
+                      <p className='bg-gray-300 h-full rounded-xl text-sm px-2 flex justify-center items-center'>Priority</p>
+                      <select name="priority" id="priority" defaultValue={subfeature.priority} onChange={(e) => handlePriorityChange(subfeature.id, e.target.value)} className='ml-1'>
+                        <option value="high">High</option>
+                        <option value="medium">Medium</option>
+                        <option value="low">Low</option>
+                      </select>
+                    </div>
                     <div className='flex items-center bg-gray-200 rounded-xl ml-2 h-6 w-40'>
                       <p className='bg-gray-300 h-full rounded-xl text-sm px-2 flex justify-center items-center'>Assign</p>
                       <select name="assignment" id="assignment" defaultValue={subfeature.assigned_to} onChange={(e) => handleAssignmentChange(subfeature.id, e.target.value)} className='ml-1'>

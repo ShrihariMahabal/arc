@@ -1,12 +1,12 @@
 import React from 'react'
 import { NavLink, useNavigate } from 'react-router'
-import { FolderKanban, LogOut } from 'lucide-react';
+import { FolderKanban, LogOut, House } from 'lucide-react';
 import { supabase } from '../supabase-client.js'
 
 function navbar() {
   const content = [
+    { icon: <House size={22} />, "title": "Home", nav: "/" },
     { icon: <FolderKanban size={22} />, "title": "Projects", nav: "/projects" },
-    { icon: <FolderKanban size={22} />, "title": "Temp", nav: "/" }
   ]
 
   const navigate = useNavigate();

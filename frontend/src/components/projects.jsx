@@ -45,6 +45,15 @@ function Projects() {
       } else {
         setProjects(projectsData);
       }
+
+      const { data: projectsData1, error: projectsError1 } = await supabase.from("projects").select("*, members!inner(user_id), users!projects_admin_fkey (username)").eq("members.user_id", userId);
+
+      if (projectsError1) {
+        console.log("error fetching projects1", projectsError1);
+        return;
+      }
+      console.log("prject", projectsData1)
+      setProjects(prevProjects => [...prevProjects, ...projectsData1]);
     };
 
     fetchProjects();
@@ -84,12 +93,11 @@ function Projects() {
   }
 
   const onGotoProject = async (project) => {
-    const { data: projectData, error: projectError } = await supabase.from("frs").select("*").eq("id", project.id)
+    const { data: projectData, error: projectError } = await supabase.from("frs").select("*").eq("project_id", project.id)
     if (projectError) {
       console.log("fr retrieving error", projectError)
     } else {
-      console.log(projectData)
-      if (projectData) {
+      if (projectData.length > 0) {
         navigate(`/projects/${project.id}`)
       } else {
         navigate(`/projects/create_doc/${project.id}`)
@@ -112,8 +120,9 @@ function Projects() {
       alert("User not logged in");
       return;
     }
-
-    const redirectUri = `https://62612fcddaa5.ngrok-free.app/github/callback`;
+    const ngrokUrl = import.meta.env.VITE_NGROK_URL;
+    const redirectUri = `https://${ngrokUrl}.ngrok-free.app/github/callback`;
+    console.log("url", redirectUri);
 
     // Save project data to localStorage before redirect
     localStorage.setItem("newProjectData", JSON.stringify({

@@ -72,6 +72,12 @@ function ProjectPage() {
     setTasks(prevTasks => prevTasks.map((task) => task.id === taskId ? {...task, status: newStatus} : task))
   }
 
+  const priorityColors = {
+    high: {bg: "bg-red-100", text: "text-red-800"},
+    medium: {bg: "bg-orange-100", text: "text-orange-800"},
+    low: {bg: "bg-green-100", text: "text-green-800"},
+  };
+
   return (
     <div className='min-h-screen w-full bg-white'>
       {/* Header Section */}
@@ -92,18 +98,19 @@ function ProjectPage() {
               <table className='w-full'>
                 <thead>
                   <tr>
-                    <th colSpan={3} className='bg-gray-100 text-black font-medium text-base px-6 py-4 text-left'>
+                    <th colSpan={4} className='bg-gray-100 text-black font-medium text-base px-6 py-4 text-left'>
                       Functional Requirement #{fr.id}
                     </th>
                   </tr>
                   <tr>
-                    <th colSpan={3} className='bg-gray-50 text-gray-700 font-medium text-sm px-6 py-3 text-left border-b border-gray-200'>
+                    <th colSpan={4} className='bg-gray-50 text-gray-700 font-medium text-sm px-6 py-3 text-left border-b border-gray-200'>
                       To Do
                     </th>
                   </tr>
                   <tr className='bg-gray-50 text-gray-600 text-xs uppercase tracking-wide'>
                     <th className='px-6 py-2 w-[3%] border-r border-gray-200'></th>
-                    <th className='px-6 py-2 text-left w-[90%] border-r border-gray-200'>Task Description</th>
+                    <th className='px-6 py-2 text-left w-[85%] border-r border-gray-200'>Task Description</th>
+                    <th className='px-6 py-2 text-center w-[5%] border-r border-gray-200'>Priority</th>
                     <th className='px-6 py-2 text-center w-[7%]'>Assignee</th>
                   </tr>
                 </thead>
@@ -128,18 +135,17 @@ function ProjectPage() {
                           <td className="px-6 py-4 text-gray-800 border-r border-gray-200">
                             {task.description + " " + "(#" + task.id + ")"}
                           </td>
+                          <td className="px-6 py-4 text-center text-gray-600 text-sm border-r border-gray-200">
+                            <Badge bgCol={priorityColors[task.priority].bg} textCol={priorityColors[task.priority].text} textSize="text-sm">{task.priority}</Badge>
+                          </td>
                           <td className="px-6 py-4 text-center text-gray-600 text-sm">
-                            {task.users?.username ? (
-                              <Badge bgCol="bg-blue-100" textCol="text-blue-800" textSize="text-sm">{task.users.username}</Badge>
-                            ) : (
-                              <span className="text-gray-400">Unassigned</span>
-                            )}
+                            <Badge bgCol="bg-blue-100" textCol="text-blue-800" textSize="text-sm">Unassigned</Badge>
                           </td>
                         </tr>
                       ))
                     ) : (
                       <tr>
-                        <td colSpan={3} className="px-6 py-6 text-center text-gray-400 italic">
+                        <td colSpan={4} className="px-6 py-6 text-center text-gray-400 italic">
                           No tasks in this section
                         </td>
                       </tr>
@@ -147,13 +153,14 @@ function ProjectPage() {
                   })()}
 
                   <tr>
-                    <th colSpan={3} className='bg-gray-50 text-gray-700 font-medium text-sm px-6 py-3 text-left border-y border-gray-200'>
+                    <th colSpan={4} className='bg-gray-50 text-gray-700 font-medium text-sm px-6 py-3 text-left border-y border-gray-200'>
                       In Progress
                     </th>
                   </tr>
                   <tr className='bg-gray-50 text-gray-600 text-xs uppercase tracking-wide'>
                     <th className='px-6 py-2 w-[3%] border-r border-gray-200'></th>
                     <th className='px-6 py-2 text-left w-[87%] border-r border-gray-200'>Task Description</th>
+                    <th className='px-6 py-2 text-center w-[5%] border-r border-gray-200'>Priority</th>
                     <th className='px-6 py-2 text-center w-[10%]'>Assignee</th>
                   </tr>
                   {(() => {
@@ -176,18 +183,17 @@ function ProjectPage() {
                           <td className="px-6 py-4 text-gray-800 border-r border-gray-200">
                             {task.description + " " + "(#" + task.id + ")"}
                           </td>
+                          <td className="px-6 py-4 text-center text-gray-600 text-sm border-r border-gray-200">
+                            <Badge bgCol={priorityColors[task.priority].bg} textCol={priorityColors[task.priority].text} textSize="text-sm">{task.priority}</Badge>
+                          </td>
                           <td className="px-6 py-4 text-center text-gray-600 text-sm">
-                            {task.users?.username ? (
-                              <Badge bgCol="bg-orange-100" textCol="text-orange-800" textSize="text-sm">{task.users.username}</Badge>
-                            ) : (
-                              <span className="text-gray-400">Unassigned</span>
-                            )}
+                            <Badge bgCol="bg-orange-100" textCol="text-orange-800" textSize="text-sm">{task.users.username}</Badge>
                           </td>
                         </tr>
                       ))
                     ) : (
                       <tr>
-                        <td colSpan={3} className="px-6 py-6 text-center text-gray-400 italic">
+                        <td colSpan={4} className="px-6 py-6 text-center text-gray-400 italic">
                           No tasks in this section
                         </td>
                       </tr>
@@ -195,13 +201,14 @@ function ProjectPage() {
                   })()}
 
                   <tr>
-                    <th colSpan={3} className='bg-gray-50 text-gray-700 font-medium text-sm px-6 py-3 text-left border-y border-gray-200'>
+                    <th colSpan={4} className='bg-gray-50 text-gray-700 font-medium text-sm px-6 py-3 text-left border-y border-gray-200'>
                       Completed
                     </th>
                   </tr>
                   <tr className='bg-gray-50 text-gray-600 text-xs uppercase tracking-wide border-b border-b-gray-200'>
                     <th className='px-6 py-2 w-[3%] border-r border-gray-200'></th>
                     <th className='px-6 py-2 text-left w-[87%] border-r border-gray-200'>Task Description</th>
+                    <th className='px-6 py-2 text-center w-[5%] border-r border-gray-200'>Priority</th>
                     <th className='px-6 py-2 text-center w-[10%]'>Assignee</th>
                   </tr>
                   {(() => {
@@ -225,18 +232,17 @@ function ProjectPage() {
                           <td className="px-6 py-4 text-gray-800 border-r border-gray-200">
                             {task.description + " " + "(#" + task.id + ")"}
                           </td>
+                          <td className="px-6 py-4 text-center text-gray-600 text-sm border-r border-gray-200">
+                            <Badge bgCol={priorityColors[task.priority].bg} textCol={priorityColors[task.priority].text} textSize="text-sm">{task.priority}</Badge>
+                          </td>
                           <td className="px-6 py-4 text-center text-gray-600 text-sm">
-                            {task.users?.username ? (
-                              <Badge bgCol="bg-green-100" textCol="text-green-800" textSize="text-sm">{task.users.username}</Badge>
-                            ) : (
-                              <span className="text-gray-400">Unassigned</span>
-                            )}
+                            <Badge bgCol="bg-orange-100" textCol="text-orange-800" textSize="text-sm">{task.users.username}</Badge>
                           </td>
                         </tr>
                       ))
                     ) : (
                       <tr>
-                        <td colSpan={3} className="px-6 py-6 text-center text-gray-400 italic">
+                        <td colSpan={4} className="px-6 py-6 text-center text-gray-400 italic">
                           No tasks in this section
                         </td>
                       </tr>

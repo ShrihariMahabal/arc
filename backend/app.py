@@ -72,7 +72,7 @@ def generate_content():
         features.append({"id": id, "title": title, "description": description, "project_id": project_id})
 
         for i, subfeature in enumerate(subtasks):
-            subfeatures.append({"id": itr, "description": subfeature, "fr_id": id, "project_id": project_id, "assigned_to": assigned_to})
+            subfeatures.append({"id": itr, "description": subfeature, "fr_id": id, "project_id": project_id, "assigned_to": assigned_to, "priority": "high"})
             itr += 1
 
     serialized_result = serialize_pydantic(result)
@@ -100,12 +100,15 @@ def generate_srs():
         if len(assigment) > 0:
             subfeature["status"] = "ongoing"
         else:
+            subfeature.pop("assigned_to")
             subfeature["status"] = "todo"
 
-    print(project_name)
-    print("lang_state ", langgraph_state)
-    print("frs", frs)
-    print("sub", subfeatures)
+
+    # print(project_name)
+    # print("lang_state ", langgraph_state)
+    # print("frs", frs)
+    # print("sub", subfeatures[0]["assigned_to"])
+    # print("sub", type(subfeatures[0]["assigned_to"]))
 
     try:
         res1 = supabase.table("frs").insert(frs).execute()
@@ -236,49 +239,38 @@ def create_project():
         owner_repo = data['url'].replace("https://github.com/", "")
         owner, repo = owner_repo.split('/')
 
-        access_token = supabase.table("github_tokens").select("access_token").eq("user_id", user_id).execute().data[0]['access_token']
+        access_token = supabase.table("github_tokens") \
+            .select("access_token") \
+            .eq("user_id", user_id) \
+            .execute() \
+            .data[0]['access_token']
 
         print("Creating webhook on:", f"{owner}/{repo}")
         print("Using token:", access_token)
 
         # Webhook URL
-        webhook_url = "https://62612fcddaa5.ngrok-free.app/github/webhook"
+        ngrok_url = os.getenv("NGROK_URL")
+        webhook_url = f"https://{ngrok_url}.ngrok-free.app/github/webhook"
+        print(webhook_url)
 
-        existing_hooks_resp = requests.get(
+        # Always create webhook (no check for existing ones)
+        response = requests.post(
             f'https://api.github.com/repos/{owner}/{repo}/hooks',
             headers={
                 'Authorization': f'token {access_token}',
                 'Accept': 'application/vnd.github.v3+json'
+            },
+            json={
+                'name': 'web',
+                'active': True,
+                'events': ['pull_request', 'pull_request_review'],
+                'config': {
+                    'url': webhook_url,
+                    'content_type': 'json'
+                }
             }
         )
-
-        if existing_hooks_resp.status_code == 200:
-            existing_hooks = existing_hooks_resp.json()
-            for hook in existing_hooks:
-                if hook['config'].get('url') == webhook_url:
-                    print("Webhook already exists. Skipping creation.")
-                    break
-            else:
-                # Step 2: Webhook not found, create it
-                response = requests.post(
-                    f'https://api.github.com/repos/{owner}/{repo}/hooks',
-                    headers={
-                        'Authorization': f'token {access_token}',
-                        'Accept': 'application/vnd.github.v3+json'
-                    },
-                    json={
-                        'name': 'web',
-                        'active': True,
-                        'events': ['pull_request', 'pull_request_review'],
-                        'config': {
-                            'url': webhook_url,
-                            'content_type': 'json'
-                        }
-                    }
-                )
-                print("Webhook creation response:", response.status_code, response.json())
-        else:
-            print("Failed to fetch existing webhooks:", existing_hooks_resp.status_code, existing_hooks_resp.text)
+        print("Webhook creation response:", response.status_code, response.json())
 
     except Exception as e:
         print("Exception during webhook setup:", e)
@@ -287,6 +279,7 @@ def create_project():
         'status': 'Project created and webhook handled',
         'project_id': inserted_project['id']
     })
+
 
 
 
