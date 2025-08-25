@@ -10,6 +10,8 @@
 ## Features
 
 ### AI-Powered Requirements Generation
+<img width="1470" height="830" alt="Screenshot 2025-08-25 at 11 57 07 AM" src="https://github.com/user-attachments/assets/8caafd39-1e79-4420-83de-f2ab3a1ecdc2" />
+
 - **Automatic SRS Creation**: Generate comprehensive Software Requirements Specification documents from prompts or uploaded files
 - **Smart Task Breakdown**: AI automatically breaks down functional requirements into manageable subtasks
 - **Intelligent Assignment**: Tasks are intelligently assigned to team members based on their skills and expertise
@@ -17,17 +19,23 @@
 - **Document Editing**: In app editing of document before finalization, with an edit option throughout the project lifecycle
 
 ### Team Collaboration
+<img width="1470" height="833" alt="Screenshot 2025-08-25 at 8 31 01 AM" src="https://github.com/user-attachments/assets/8a6480fd-847d-40e7-9bf8-9d0911972f80" />
+
 - **Project Management**: Create and manage multiple projects with team members
 - **GitHub Integration**: Seamless GitHub repository linking with webhook automation
 - **Real-time Updates**: Live project status and task progress tracking
 
 ### Task Management
+<img width="1470" height="834" alt="Screenshot 2025-08-25 at 8 44 55 AM" src="https://github.com/user-attachments/assets/052b97d7-ecc4-4b3d-b8d6-742eed70f26c" />
+
 - **Kanban-style Workflow**: Tasks organized by status (Todo, In Progress, Completed)
 - **Priority Management**: High, Medium, Low priority levels for effective task prioritization
 - **Progress Tracking**: Visual progress indicators and completion status
 - **Assignment Management**: Easy task reassignment and workload distribution
 
 ### Professional Documentation
+<img width="761" height="853" alt="Screenshot 2025-08-25 at 11 46 24 AM" src="https://github.com/user-attachments/assets/07faf488-968f-4339-ac0b-fa329c0f980e" />
+
 - **SRS Generation**: Automatically create professional Word documents
 - **Structured Output**: Well-organized requirements with clear hierarchies
 - **Export Capabilities**: Download generated documents for stakeholder review
@@ -117,7 +125,3 @@ NGROK_URL=your_ngrok_url
 2. **Track Progress**: Monitor task completion across the project
 3. **Update Status**: Mark tasks as complete or in progress
 4. **Team Collaboration**: Coordinate with team members on assignments
-
-
-
-*Transform your project planning with AI-powered intelligence*
