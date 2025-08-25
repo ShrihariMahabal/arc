@@ -291,7 +291,9 @@ def create_project():
     })
 
 
-
+@app.route("/test", methods=['GET'])
+def test():
+    return 'hello'
 
 
 if __name__ == "__main__":

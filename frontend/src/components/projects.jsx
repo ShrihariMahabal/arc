@@ -54,6 +54,8 @@ function Projects() {
       }
       console.log("prject", projectsData1)
       setProjects(projectsData1);
+
+      // const {data: subfeaturesData, error: subfeaturesError} = await supabase.from("subfeatures").select("*, ")
     };
 
     fetchProjects();
@@ -138,9 +140,9 @@ function Projects() {
 
 
   return (
-    <div className='min-h-screen w-full bg-gray-50 p-4 relative'>
+    <div className='min-h-screen w-full bg-gray-50 p-8 relative'>
       {isModalOpen && <div className='fixed inset-0 bg-black opacity-50 backdrop-blur-xl z-10'></div>}
-      <h1 className='text-2xl font-semibold mb-2'>Your Projects</h1>
+      <h1 className='text-2xl font-semibold mb-6'>Your Projects</h1>
       <ul className='grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4'>
         {projects.map((project, idx) => (
           <li key={idx}>
@@ -156,32 +158,32 @@ function Projects() {
         ))}
       </ul>
 
-      <div onClick={() => setIsModalOpen(true)} className='px-3 py-2 bg-primary rounded-xl text-white fixed bottom-6 right-6 font-semibold hover:scale-110 transition-all cursor-pointer'>Create Project</div>
+      <div onClick={() => setIsModalOpen(true)} className='px-3 py-2 bg-primary rounded-xl text-white fixed top-8 right-8 font-semibold hover:scale-110 transition-all cursor-pointer'>Create Project</div>
       {isModalOpen && <div className='fixed left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2 z-50'>
         <Modal title="Create Project" onClose={() => setIsModalOpen(false)} onSubmit={handleCreateProject}>
           <div className='flex flex-col space-y-4'>
-            <div className='flex flex-col space-x-1'>
+            <div className='flex flex-col space-y-1.5'>
               <label htmlFor="title">
-                <p className='text-medium'>Project Title</p>
+                <p className='text-sm text-gray-600'>Project Title</p>
               </label>
               <input value={title} onChange={(e) => setTitle(e.target.value)} type="text" name="title" id="title" placeholder='Ex- Todo App' className='bg-gray-200 rounded-sm p-1' />
             </div>
-            <div className='flex flex-col space-x-1'>
+            <div className='flex flex-col space-y-1.5'>
               <label htmlFor="description">
-                <p className='text-medium'>Project Description</p>
+                <p className='text-sm text-gray-600'>Project Description</p>
               </label>
               <input value={description} onChange={(e) => setDescription(e.target.value)} type="text" name="title" id="description" placeholder='Ex- Handles tasks' className='bg-gray-200 rounded-sm p-1' />
             </div>
-            <div className='flex flex-col space-x-1'>
+            <div className='flex flex-col space-y-1.5'>
               <label htmlFor="url">
-                <p className='text-medium'>Github URL</p>
+                <p className='text-sm text-gray-600'>Github URL</p>
               </label>
               <input value={url} onChange={(e) => setUrl(e.target.value)} type="text" name="url" id="url" placeholder='Ex- github.com/your_name/name' className='bg-gray-200 rounded-sm p-1' />
             </div>
             <div className='flex flex-col space-y-2 relative'>
-              <div className='flex flex-col space-x-1'>
+              <div className='flex flex-col space-y-1.5'>
                 <label htmlFor="users">
-                  <p className='text-medium'>Add Project Members</p>
+                  <p className='text-sm text-gray-600'>Add Project Members</p>
                 </label>
                 <input value={query} onChange={(e) => setQuery(e.target.value)} type="text" name="users" id="users" placeholder='Ex- ShrihariMahabal, etc.' className='bg-gray-200 rounded-sm p-1' />
               </div>
