@@ -35,16 +35,16 @@ function Projects() {
       console.log("current user: ", userId)
       setUserId(userId);
 
-      const { data: projectsData, error: projectsError } = await supabase
-        .from("projects")
-        .select("*, users!projects_admin_fkey (username)")
-        .eq("admin", userId);
+      // const { data: projectsData, error: projectsError } = await supabase
+      //   .from("projects")
+      //   .select("*, users!projects_admin_fkey (username)")
+      //   .eq("admin", userId);
 
-      if (projectsError) {
-        console.log("error fetching projects", projectsError);
-      } else {
-        setProjects(projectsData);
-      }
+      // if (projectsError) {
+      //   console.log("error fetching projects", projectsError);
+      // } else {
+      //   setProjects(projectsData);
+      // }
 
       const { data: projectsData1, error: projectsError1 } = await supabase.from("projects").select("*, members!inner(user_id), users!projects_admin_fkey (username)").eq("members.user_id", userId);
 
@@ -53,7 +53,7 @@ function Projects() {
         return;
       }
       console.log("prject", projectsData1)
-      setProjects(prevProjects => [...prevProjects, ...projectsData1]);
+      setProjects(projectsData1);
     };
 
     fetchProjects();

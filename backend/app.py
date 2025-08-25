@@ -49,8 +49,17 @@ def generate_content():
         print(project_members)
     except Exception as e:
         print("project fetching error", e)
+    
+    admin_id = None
+    try:
+        admin_id = supabase.table("projects").select("admin").eq("id", project_id).execute().data[0]["admin"]
+        print("admin", admin_id)
+    except Exception as e:
+        print("error fetching project admin", e)
 
-    result = graph.invoke({"user_input": message, "members": project_members})
+    project_members_for_content = [i["users"] for i in project_members if i["users"]["user_id"] != admin_id]
+    print("content. ", project_members_for_content)
+    result = graph.invoke({"user_input": message, "members": project_members_for_content})
     
     features = []
     subfeatures = []
@@ -233,6 +242,7 @@ def create_project():
             'project_id': inserted_project['id'],
             'user_id': member['user_id'] 
         }).execute()
+    supabase.table("members").insert({"project_id": inserted_project['id'], "user_id": user_id}).execute()
 
     try:
         # Parse GitHub owner/repo from URL

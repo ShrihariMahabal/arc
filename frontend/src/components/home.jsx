@@ -23,13 +23,6 @@ function Home() {
       setProjects(projectsData);
       console.log("projects", projectsData);
 
-      // const {data: projectsWhereAdminData, error: projectsWhereAdminError} = await supabase.from("projects").select("*").eq("admin", user_id);
-      // if (projectsWhereAdminError) {
-      //   console.log("error fetching admin projects", projectsWhereAdminError);
-      // }
-      // setProjects(prevProjects => [...prevProjects, projectsWhereAdminData]);
-      // console.log("admin projects", projectsWhereAdminData);
-
       const { data: tasksData, error: tasksError } = await supabase.from("subfeatures").select("*").eq("assigned_to", user_id).eq("priority", "high").eq("status", "ongoing");
       if (tasksError) {
         console.log("error fetching tasks", tasksError);
