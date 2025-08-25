@@ -10,7 +10,7 @@
 ## Features
 
 ### AI-Powered Requirements Generation
-<img width="1470" height="830" alt="Screenshot 2025-08-25 at 11 57 07 AM" src="https://github.com/user-attachments/assets/8caafd39-1e79-4420-83de-f2ab3a1ecdc2" />
+<img width="1470" height="830" alt="Screenshot 2025-08-25 at 8 28 42 PM" src="https://github.com/user-attachments/assets/08170d7c-118b-4059-b62d-de49e587ca10" />
 
 - **Automatic SRS Creation**: Generate comprehensive Software Requirements Specification documents from prompts or uploaded files
 - **Smart Task Breakdown**: AI automatically breaks down functional requirements into manageable subtasks
@@ -19,14 +19,14 @@
 - **Document Editing**: In app editing of document before finalization, with an edit option throughout the project lifecycle
 
 ### Team Collaboration
-<img width="1470" height="833" alt="Screenshot 2025-08-25 at 8 31 01 AM" src="https://github.com/user-attachments/assets/8a6480fd-847d-40e7-9bf8-9d0911972f80" />
+<img width="1470" height="830" alt="Screenshot 2025-08-25 at 8 27 19 PM" src="https://github.com/user-attachments/assets/a1985388-814c-4425-a13e-33d79dcfc668" />
 
 - **Project Management**: Create and manage multiple projects with team members
 - **GitHub Integration**: Seamless GitHub repository linking with webhook automation
 - **Real-time Updates**: Live project status and task progress tracking
 
 ### Task Management
-<img width="1470" height="834" alt="Screenshot 2025-08-25 at 8 44 55 AM" src="https://github.com/user-attachments/assets/052b97d7-ecc4-4b3d-b8d6-742eed70f26c" />
+<img width="1470" height="830" alt="Screenshot 2025-08-25 at 8 29 25 PM" src="https://github.com/user-attachments/assets/6332f5c4-2396-427a-9304-2c97e62cee90" />
 
 - **Kanban-style Workflow**: Tasks organized by status (Todo, In Progress, Completed)
 - **Priority Management**: High, Medium, Low priority levels for effective task prioritization
@@ -34,7 +34,7 @@
 - **Assignment Management**: Easy task reassignment and workload distribution
 
 ### Professional Documentation
-<img width="761" height="853" alt="Screenshot 2025-08-25 at 11 46 24 AM" src="https://github.com/user-attachments/assets/07faf488-968f-4339-ac0b-fa329c0f980e" />
+<img width="663" height="794" alt="Screenshot 2025-08-25 at 8 41 32 PM" src="https://github.com/user-attachments/assets/2b26b5f7-772e-41e7-a5ed-79464768b4b9" />
 
 - **SRS Generation**: Automatically create professional Word documents
 - **Structured Output**: Well-organized requirements with clear hierarchies
