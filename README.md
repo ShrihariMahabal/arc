@@ -117,7 +117,3 @@ NGROK_URL=your_ngrok_url
 2. **Track Progress**: Monitor task completion across the project
 3. **Update Status**: Mark tasks as complete or in progress
 4. **Team Collaboration**: Coordinate with team members on assignments
-
-
-
-*Transform your project planning with AI-powered intelligence*
